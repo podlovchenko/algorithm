@@ -10,6 +10,7 @@ const graph = [
 
 const calculate = (n) => {
     const d = graph[n];
+    const p = graph[n].map((item, i) => item !== 0 || i === n ? n : -1);
     const v = [];
 
     v.push(n);
@@ -25,20 +26,52 @@ const calculate = (n) => {
             }
         });
 
-        if (!imin) {
+        if (imin === null) {
             break;
         }
 
         graph[imin].forEach((item, i) => {
             if (item !== 0 && (d[imin] + item < d[i] || !d[i])) {
                 d[i] = d[imin] + item;
+                p[i] = imin;
             }
         });
 
         v.push(imin);
     }
 
-    return d;
+    const answer = {};
+
+    for (let i = 0; i < p.length; i++) {
+        answer[i] = {};
+
+        answer[i].way = [];
+        answer[i].weight = d[i];
+
+        let j = i;
+        let state = true;
+
+        while (p[j] !== n) {
+            if (p[j] === -1) {
+                state = false;
+
+                break;
+            }
+
+            answer[i].way.push(p[j]);
+
+            j = p[j];
+        }
+
+        if (state) {
+            answer[i].way.push(n);
+            answer[i].way.reverse();
+        } else {
+            answer[i].way = -1;
+        }
+    }
+
+    return answer;
 };
 
 const app = express();
@@ -56,8 +89,13 @@ app.use('/graph', (req, res) => {
 });
 
 app.use('/way/:v', (req, res) => {
-    const {v} = req.params;
-    res.status(200).json(calculate(v));
+    const v = Number(req.params.v);
+
+    if (v >= 0 && v < graph.length) {
+        res.status(200).json(calculate(v));
+    } else {
+        res.status(400).json('error');
+    }
 });
 
 app.listen(process.env.PORT || '8080', () => {
