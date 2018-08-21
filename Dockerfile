@@ -6,9 +6,10 @@ RUN apt-get install -y curl
 RUN curl --silent --location https://deb.nodesource.com/setup_4.x | bash -
 RUN apt-get install -y nodejs
 RUN apt-get install -y build-essential
+RUN ln -s /usr/bin/nodejs /usr/bin/node
 
-RUN npm run install
+RUN npm install
 
 EXPOSE 5000
 
-CMD npm run start
+CMD npm start
